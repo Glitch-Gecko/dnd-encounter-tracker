@@ -3,6 +3,9 @@ name = "dnd-encounter-tracker"
 version = "0.1.0"
 edition = "2021"
 authors = ["Glitchgecko"]
+description = "DnD 5e CLI-based combat encounter tracker"
+repository = "https://github.com/Glitch-Gecko/dnd-encounter-tracker"
+license = "MIT"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
