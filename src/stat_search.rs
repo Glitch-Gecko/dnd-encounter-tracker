@@ -56,7 +56,7 @@ struct Ability {
 ///
 pub fn load_monster(monster_type: String) -> encounter::Character {
     // Reads statblock file
-    let contents = fs::read_to_string("/usr/local/share/dnd-combat-encounter/statblocks.json").expect("Couldn't read statblock file");
+    let contents = fs::read_to_string("/usr/local/share/dnd-encounter-tracker/statblocks.json").expect("Couldn't read statblock file");
     let creatures = parse_json(&contents).unwrap();
 
     // Checks if the creature exists
@@ -93,7 +93,7 @@ pub fn load_monster(monster_type: String) -> encounter::Character {
 /// Prints available monsters in the statblock file
 ///
 pub fn print_monsters() {
-    let contents = fs::read_to_string("/usr/local/share/dnd-combat-encounter/statblocks.json").expect("Couldn't read statblock file");
+    let contents = fs::read_to_string("/usr/local/share/dnd-encounter-tracker/statblocks.json").expect("Couldn't read statblock file");
     let creatures = parse_json(&contents).unwrap();
     println!("==========");
     println!("Available creatures:");
@@ -109,7 +109,7 @@ pub fn print_monsters() {
 /// Used in the main menu to display selected monster's actions and abilities
 ///
 pub fn combat_stats(creature_stat: &str) {
-    let contents = fs::read_to_string("/usr/local/share/dnd-combat-encounter/statblocks.json").expect("Couldn't read statblock file");
+    let contents = fs::read_to_string("/usr/local/share/dnd-encounter-tracker/statblocks.json").expect("Couldn't read statblock file");
     let creatures = parse_json(&contents).unwrap();
 
     if let Some(creature) = creatures.iter().find(|c| c.name.to_lowercase() == creature_stat.to_lowercase()) {
@@ -140,7 +140,7 @@ pub fn combat_stats(creature_stat: &str) {
 /// Used in the main menu to display selected monster's stats
 ///
 pub fn print_attributes(creature_stat: &str) {
-    let contents = fs::read_to_string("/usr/local/share/dnd-combat-encounter/statblocks.json").expect("Couldn't read statblock file");
+    let contents = fs::read_to_string("/usr/local/share/dnd-encounter-tracker/statblocks.json").expect("Couldn't read statblock file");
     let creatures = parse_json(&contents).unwrap();
 
     if let Some(creature) = creatures.iter().find(|c| c.name.to_lowercase() == creature_stat.to_lowercase()) {
@@ -152,7 +152,7 @@ pub fn print_attributes(creature_stat: &str) {
 /// Used in [encounter::attack] to display selected monster's attacks
 ///
 pub fn print_attacks(creature_stat: &str) {
-    let contents = fs::read_to_string("/usr/local/share/dnd-combat-encounter/statblocks.json").expect("Couldn't read statblock file");
+    let contents = fs::read_to_string("/usr/local/share/dnd-encounter-tracker/statblocks.json").expect("Couldn't read statblock file");
     let creatures = parse_json(&contents).unwrap();
 
     if let Some(creature) = creatures.iter().find(|c| c.name.to_lowercase() == creature_stat.to_lowercase()) {
@@ -174,7 +174,7 @@ pub fn print_attacks(creature_stat: &str) {
 /// Used to send the selected attack to [encounter::attack], returning null values if the attack or monster doesn't exist
 ///
 pub fn get_attack(creature_stat: &str, attack_number: usize) -> Action {
-    let contents = fs::read_to_string("/usr/local/share/dnd-combat-encounter/statblocks.json").expect("Couldn't read statblock file");
+    let contents = fs::read_to_string("/usr/local/share/dnd-encounter-tracker/statblocks.json").expect("Couldn't read statblock file");
     let creatures = parse_json(&contents).unwrap();
 
     if let Some(creature) = creatures.iter().find(|c| c.name.to_lowercase() == creature_stat.to_lowercase()) {
@@ -213,7 +213,7 @@ pub fn get_attack(creature_stat: &str, attack_number: usize) -> Action {
 /// Function used to display the monster's statblock
 ///
 pub fn statblocks() {
-    let contents = fs::read_to_string("/usr/local/share/dnd-combat-encounter/statblocks.json").expect("Couldn't read statblock file");
+    let contents = fs::read_to_string("/usr/local/share/dnd-encounter-tracker/statblocks.json").expect("Couldn't read statblock file");
     let creatures = parse_json(&contents).unwrap();
 
     print_monsters();

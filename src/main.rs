@@ -113,7 +113,7 @@ fn main() {
         print!("{esc}[2J{esc}[1;1H", esc = 27 as char);
 
         // Checks if encounter file exists, calls initialization function if it doesn't
-        let path = Path::new("/usr/local/share/dnd-combat-encounter/encounter.json");
+        let path = Path::new("/usr/local/share/dnd-encounter-tracker/encounter.json");
         if path.exists() {
             println!("Current Round: {round}");
             print_creatures(position);
