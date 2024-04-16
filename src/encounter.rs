@@ -21,18 +21,49 @@ pub struct Character {
 }
 
 ///
-/// Grabs stats from [stat_search] and rolls for a hit and damage against a character's AC
+/// Loads encounter file if it exists
 ///
-pub fn attack() {
-    // Loads encounter file if it exists
+fn load_encounter_file() -> Vec<Character> {
     let expanded_path = shellexpand::tilde("~/.config/dnd-encounter-tracker/encounter.json").into_owned();
     let path = PathBuf::from(expanded_path);
     let content = fs::read_to_string(&path).unwrap_or_else(|_| "[]".to_string());
-    let characters: Vec<Character> = serde_json::from_str(&content).unwrap_or_else(|_| {
+    serde_json::from_str(&content).unwrap_or_else(|_| {
         println!("Error parsing JSON. Starting with an empty list.");
         Vec::new()
-    });
+    })
+}
 
+///
+/// Saves encounter file to ~/.config/dnd-encounter-tracker/encounter.json and creates directory if it doesn't exist
+///
+fn save_encounter_file(characters: &mut Vec<Character>) {
+    // Sorts characters by initiative (doesn't take dex into account)
+    characters.sort_by_key(|char| -char.initiative);
+
+    // Saves changes to encounter file, and creates the folder structure
+    let json_characters = serde_json::to_string_pretty(&characters).unwrap();
+    let expanded_path = shellexpand::tilde("~/.config/dnd-encounter-tracker").into_owned();
+    let path = PathBuf::from(expanded_path);
+    std::fs::create_dir_all(&path).expect("Failed to create directory");
+    let expanded_path = shellexpand::tilde("~/.config/dnd-encounter-tracker/encounter.json").into_owned();
+    let path = PathBuf::from(expanded_path);
+    std::fs::write(&path, json_characters).expect("Unable to write to file");
+}
+
+fn input_break_check(input: &str) -> usize {
+    match input {
+        "done" => 0,
+        "0" => 0,
+        _ => 1
+    }
+}
+
+///
+/// Grabs stats from [stat_search] and rolls for a hit and damage against a character's AC
+///
+pub fn attack() {
+    let characters = load_encounter_file();
+    
     // Initializes damage output strings to null
     let mut attack_string_1 = "Null".to_string();
     let mut attack_string_2 = "Null".to_string();
@@ -48,43 +79,33 @@ pub fn attack() {
             } else {println!();}
         }
 
-        println!("Enter the number of the attacking creature (can't be a player), or type \"done\" to return:");
-        let input: String = user_input::input();
-        println!();
-        if input == "done" {
+        println!("Enter the number of the attacking creature (can't be a player), or type \"0\" to return:");
+        let attacker: usize = user_input::usize_input();
+        if input_break_check(attacker.to_string().as_str()) == 0 || attacker > characters.len() || &characters[attacker-1].character_type == "Player" {
             break;
-        }
-        let attacker = input.parse::<usize>().unwrap();
-        
-        // Restarts function if a player is entered
-        if &characters[attacker-1].character_type == "Player" {
-            attack();
         }
 
-        println!("Enter the number of the attacked creature, or type \"done\" to return:");
-        let input: String = user_input::input();
-        println!();
-        if input == "done" {
+        println!("\nEnter the number of the attacked creature, or type \"0\" to return:");
+        let attacked: usize = user_input::usize_input();
+        if input_break_check(attacked.to_string().as_str()) == 0 || attacked > characters.len() {
             break;
         }
-        let attacked = input.parse::<usize>().unwrap();
 
         // Displays attacks based on the character's type in the encounter file
-        stat_search::print_attacks(&characters[attacker-1].character_type);
-        println!("Enter the number of the attack, or type \"done\" to return:");
-
-
-        let input: String = user_input::input();
-        let attack_number = input.parse::<usize>().unwrap();
         println!();
-        if input == "done" {
+        let attack_count = stat_search::print_attacks(&characters[attacker-1].character_type);
+
+        println!("Enter the number of the attack, or type \"0\" to return:");
+        let attack_number: usize = user_input::usize_input();
+        println!();
+        if input_break_check(attack_number.to_string().as_str()) == 0 || attack_number > attack_count {
             break;
         }
 
         // Actually loads the attack, resetting if it's invalid
         let attack_var = stat_search::get_attack(&characters[attacker-1].character_type, attack_number);
         if attack_var.damage_type == "Null" {
-            attack();
+            break;
         }
 
         // Rolls for attack and damage, comparing it to target's AC
@@ -116,70 +137,65 @@ pub fn attack() {
 /// Loads encounter file and allows for edits, then saves any modifications to the file
 ///
 pub fn edit_creature() {
-    // Loads encounter file
-    let expanded_path = shellexpand::tilde("~/.config/dnd-encounter-tracker/encounter.json").into_owned();
-    let path = PathBuf::from(expanded_path);
-    let content = fs::read_to_string(&path).unwrap_or_else(|_| "[]".to_string());
-    let mut characters: Vec<Character> = serde_json::from_str(&content).unwrap_or_else(|_| {
-        println!("Error parsing JSON. Starting with an empty list.");
-        Vec::new()
-    });
-
+    let mut characters = load_encounter_file();
 
     loop {
         print_creatures(&characters);
-        println!("Enter the number of a creature to edit, or type \"done\" to return: ");
-        let input: String = user_input::input();
-        println!();
-
-        if input == "done" {
-            println!("Finished adding characters\n");
+        println!("Enter the number of a creature to edit, or type \"0\" to return: ");
+        let number: usize = user_input::usize_input();
+        if input_break_check(number.to_string().as_str()) == 0 || number > characters.len() {
             break;
         }
 
-        let number = input.parse::<usize>().unwrap();
-
-        println!("Editing {}/{}\n", characters[number-1].character_type, characters[number-1].name);
-        println!("Fields:");
-        println!("| 1. Name: {} | 2. Creature race: {} | 3. AC: {} | 4. HP: {} | 5. Initiative: {} |", characters[number-1].name, characters[number-1].character_type, characters[number-1].ac, characters[number-1].hp, characters[number-1].initiative);
+        println!("{}", format!("╔{:═<35}╗", "═"));
+        println!("{}", format!("║{:^35}║", format!("Editing {}/{}", characters[number-1].character_type, characters[number-1].name).bold()));
+        println!("{}", format!("╟{:─<35}╢", "─"));
+        println!("{}", format!("║{:^35}║", format!("1. Name: {}", characters[number-1].name)));
+        println!("{}", format!("╟{:┄<35}╢", "┄"));
+        println!("{}", format!("║{:^35}║", format!("2. Race: {}", characters[number-1].character_type)));
+        println!("{}", format!("╟{:┄<35}╢", "┄"));
+        println!("{}", format!("║{:^35}║", format!("3. AC: {}", characters[number-1].ac)));
+        println!("{}", format!("╟{:┄<35}╢", "┄"));
+        println!("{}", format!("║{:^35}║", format!("4. HP: {}", characters[number-1].hp)));
+        println!("{}", format!("╟{:┄<35}╢", "┄"));
+        println!("{}", format!("║{:^35}║", format!("5. Initiative: {}", characters[number-1].initiative)));
+        println!("{}", format!("╚{:═<35}╝", "═"));
         println!("\nEnter the number of the field to edit:");
-        let input: String = user_input::input();
-        println!();
+        let input: usize = user_input::usize_input();
+        if input_break_check(input.to_string().as_str()) == 0 || input > 5 {
+            break;
+        }
         
-        match input.as_str() {
-            "1" => {
+        println!();
+        match input {
+            1 => {
                 println!("Enter new name:");
                 characters[number-1].name = titlecase(&user_input::input());
             },
-            "2" => {
+            2 => {
                 println!("Enter new race:");
                 characters[number-1].character_type = titlecase(&user_input::input());
             },
-            "3" => {
+            3 => {
                 println!("Enter new AC:");
-                characters[number-1].ac = user_input::input().parse::<i32>().unwrap();
+                characters[number-1].ac = user_input::int_input();
             },
-            "4" => {
+            4 => {
                 println!("Enter new HP:");
-                characters[number-1].hp = user_input::input().parse::<i32>().unwrap();
+                characters[number-1].hp = user_input::int_input();
             },
-            "5" => {
+            5 => {
                 println!("Enter new initiative:");
-                characters[number-1].initiative = user_input::input().parse::<i32>().unwrap();
+                characters[number-1].initiative = user_input::int_input();
             }
             _ => {
                 println!("Invalid input!");
-                edit_creature();
+                break;
             }
         }
-        
         // Saves new file contents
-        let json_characters = serde_json::to_string_pretty(&characters).unwrap();
-        let expanded_path = shellexpand::tilde("~/.config/dnd-encounter-tracker/encounter.json").into_owned();
-        let path = PathBuf::from(expanded_path);
-        std::fs::write(&path, json_characters).expect("Unable to write to file");
+        save_encounter_file(&mut characters);
     }
-
 }
 
 ///
@@ -192,18 +208,24 @@ fn print_creatures(characters: &Vec<Character>) {
     // This variable is used to actually number each creature
     let mut number = 1;
     if characters.len() != 0 {
-        println!("Current encounter:");
+        println!("{}", format!("╔{:═<35}╗", "═"));
+        println!("{}", format!("║{:^35}║", format!("Current Encounter:").bold()));
         for creature in characters {
+            if number == 1 {
+                println!("{}", format!("╟{:─<35}╢", "─"));
+            } else {
+                println!("{}", format!("╟{:┄<35}╢", "┄"));
+            }
             if creature.character_type == "Player" {
                 let string = format!("{}. PC/{}", number, creature.name);
-                print!("| {} ", string.blue());
+                println!("║{:^35}║", string.blue());
             } else {
-                let string = format!("{}. {}/{}", number, creature.character_type, creature.name);
-                print!("| {} ", string.red());
+                let string = format!("{}. {}/{}, {} HP", number, creature.character_type, creature.name, creature.hp);
+                println!("║{:^35}║", string.red());
             }
             number +=1;
         }
-        println!("|\n");
+        println!("{}\n", format!("╚{:═<35}╝", "═"));
     }
 }
 
@@ -211,35 +233,23 @@ fn print_creatures(characters: &Vec<Character>) {
 /// Function used to remove a creature from the encounter list
 ///
 pub fn remove_creature() {
-    // Loads encounter file
-    let expanded_path = shellexpand::tilde("~/.config/dnd-encounter-tracker/encounter.json").into_owned();
-    let path = PathBuf::from(expanded_path);
-    let content = fs::read_to_string(&path).unwrap_or_else(|_| "[]".to_string());
-    let mut characters: Vec<Character> = serde_json::from_str(&content).unwrap_or_else(|_| {
-        println!("Error parsing JSON. Starting with an empty list.");
-        Vec::new()
-    });
+    let mut characters = load_encounter_file();
     
     loop {
-        print_creatures(&characters);
-        println!("Enter the number of a creature to remove, or type \"done\" to return: ");
-        let input: String = user_input::input();
-        println!();
-
-        if input == "done" {
-            println!("Finished adding characters\n");
+        if characters.len() == 0 {
             break;
         }
-
-        let number = input.parse::<usize>().unwrap();
+        print_creatures(&characters);
+        println!("Enter the number of a creature to remove, or type \"0\" to return: ");
+        let number: usize = user_input::usize_input();
+        if input_break_check(number.to_string().as_str()) == 0 || number > characters.len() {
+            break;
+        }
+        println!();
 
         characters.remove(number-1);
 
-        // Saves changes to encounter file
-        let json_characters = serde_json::to_string_pretty(&characters).unwrap();
-        let expanded_path = shellexpand::tilde("~/.config/dnd-encounter-tracker/encounter.json").into_owned();
-        let path = PathBuf::from(expanded_path);
-        std::fs::write(&path, json_characters).expect("Unable to write to file");
+        save_encounter_file(&mut characters);
     }
 }
 
@@ -247,37 +257,22 @@ pub fn remove_creature() {
 /// Function used to apply damage to a creature based on the creature's number (refer to [print_creatures])
 ///
 pub fn damage_creature() {
-    // Loads encounter file
-    let expanded_path = shellexpand::tilde("~/.config/dnd-encounter-tracker/encounter.json").into_owned();
-    let path = PathBuf::from(expanded_path);
-    let content = fs::read_to_string(&path).unwrap_or_else(|_| "[]".to_string());
-    let mut characters: Vec<Character> = serde_json::from_str(&content).unwrap_or_else(|_| {
-        println!("Error parsing JSON. Starting with an empty list.");
-        Vec::new()
-    });
+    let mut characters = load_encounter_file();
     
     loop {
         print_creatures(&characters);
-        println!("Enter the number of a creature to damage, or type \"done\" to return: ");
-        let input: String = user_input::input();
-        println!();
-        if input == "done" {
-            println!("Finished adding characters\n");
+        println!("Enter the number of a creature to damage, or type \"0\" to return: ");
+        let number: usize = user_input::usize_input();
+        if input_break_check(number.to_string().as_str()) == 0 || number > characters.len() {
             break;
         }
-        let number = input.parse::<usize>().unwrap();
 
-        println!("Damaging {}/{}", characters[number-1].character_type, characters[number-1].name);
+        println!("\nDamaging {}/{}", characters[number-1].character_type, characters[number-1].name);
         println!("Enter damage dealt (negatives are used for healing):");
-        let damage = user_input::input().parse::<i32>().unwrap();
-
+        let damage: i32 = user_input::int_input();
         characters[number-1].hp -= damage;
 
-        // Saves changes in encounter file
-        let json_characters = serde_json::to_string_pretty(&characters).unwrap();
-        let expanded_path = shellexpand::tilde("~/.config/dnd-encounter-tracker/encounter.json").into_owned();
-        let path = PathBuf::from(expanded_path);
-        std::fs::write(&path, json_characters).expect("Unable to write to file");
+        save_encounter_file(&mut characters);
     }
 }
 
@@ -303,12 +298,12 @@ fn add_player() -> Character {
     println!("Enter player name:");
     let name = titlecase(&user_input::input());
     println!("\nEnter {}'s AC:", name);
-    let ac = user_input::input().parse::<i32>().unwrap();
+    let ac = user_input::int_input();
 
     // Note that hp is not used, but is necessary for the Character struct
     let hp = 999999;
     println!("\nEnter {}'s rolled initiative:", name);
-    let initiative = user_input::input().parse::<i32>().unwrap();
+    let initiative = user_input::int_input();
     println!("\nPlayer {} added!\n", name);
 
     // Returns the character
@@ -325,23 +320,14 @@ fn add_player() -> Character {
 /// Adds either a monster or player using [add_monster] and [add_player]
 ///
 pub fn add_character() {
-    // Loads encounter file
-    let expanded_path = shellexpand::tilde("~/.config/dnd-encounter-tracker/encounter.json").into_owned();
-    let path = PathBuf::from(expanded_path);
-    let content = fs::read_to_string(&path).unwrap_or_else(|_| "[]".to_string());
-    let mut characters: Vec<Character> = serde_json::from_str(&content).unwrap_or_else(|_| {
-        println!("Error parsing JSON. Starting with an empty list.");
-        Vec::new()
-    });
+    let mut characters = load_encounter_file();
 
     loop {
         print_creatures(&characters);
         println!("Add either a (m)onster or (p)layer, or type \"done\" to return: ");
         let input: String = user_input::input();
         println!();
-
-        if input == "done" {
-            println!("Finished adding characters\n");
+        if input_break_check(&input) == 0 {
             break;
         }
 
@@ -353,16 +339,5 @@ pub fn add_character() {
             }
         }
     }
-
-    // Sorts characters by initiative (doesn't take dex into account)
-    characters.sort_by_key(|char| -char.initiative);
-
-    // Saves changes to encounter file, and creates the folder structure
-    let json_characters = serde_json::to_string_pretty(&characters).unwrap();
-    let expanded_path = shellexpand::tilde("~/.config/dnd-encounter-tracker").into_owned();
-    let path = PathBuf::from(expanded_path);
-    std::fs::create_dir_all(&path).expect("Failed to create directory");
-    let expanded_path = shellexpand::tilde("~/.config/dnd-encounter-tracker/encounter.json").into_owned();
-    let path = PathBuf::from(expanded_path);
-    std::fs::write(&path, json_characters).expect("Unable to write to file");
+    save_encounter_file(&mut characters);
 }

@@ -95,14 +95,15 @@ pub fn load_monster(monster_type: String) -> encounter::Character {
 pub fn print_monsters() {
     let contents = fs::read_to_string("/usr/local/share/dnd-encounter-tracker/statblocks.json").expect("Couldn't read statblock file");
     let creatures = parse_json(&contents).unwrap();
-    println!("==========");
-    println!("Available creatures:");
-    print!("| ");
+    println!("{}", format!("╔{:═<70}╗", "═"));
+    println!("{}", format!("║{:^70}║", "Available creatures:"));
+    println!("{}", format!("╙{:─<70}╜", "─"));
+    print!("│ ");
     for creature in &creatures {
-        print!("{} | ", creature.name);
+        print!("{} │ ", creature.name);
         io::stdout().flush().unwrap();
     }
-    println!("\n==========");
+    println!("\n{}", format!("{:═^72}", "═"));
 }
 
 ///
@@ -113,24 +114,37 @@ pub fn combat_stats(creature_stat: &str) {
     let creatures = parse_json(&contents).unwrap();
 
     if let Some(creature) = creatures.iter().find(|c| c.name.to_lowercase() == creature_stat.to_lowercase()) {
-    println!("\n==========");
-    println!("Actions:");
+    println!("\n{}", format!("╔{:═^70}╗", "═"));
+    println!("{}", format!("║{:^70}║", format!("Actions:")));
+    // Variable used for printing box for first creature
+    let mut num = 1;
     for action in &creature.actions {
-        println!("----------");
+        if num == 1 {
+            println!("{}", format!("╙{:─<70}╜", "─"));
+        } else {
+            println!("{}", format!("{:─<72}", "─"));
+        }
+        num+=1;
         println!(" {}:", action.name);
         println!("Description: \"{}\"", action.description);
         println!("Attack roll modifier: +{}", action.attack_modifier);
         println!("Damage dice: {}d{}+{}", action.damage_dice[0], action.damage_dice[1], action.damage_bonus);
         println!("Damage type: {}", action.damage_type);
     }
-    println!("==========");
-    println!("Abilities:");
+    println!("{}", format!("╔{:═^70}╗", "═"));
+    println!("{}", format!("║{:^70}║", format!("Abilities:")));
+    num = 1;
     for ability in &creature.abilities {
-        println!("----------");
+        if num == 1 {
+            println!("{}", format!("╙{:─<70}╜", "─"));
+        } else {
+            println!("{}", format!("{:─<72}", "─"));
+        }
+        num+=1;
         println!(" {}:", ability.name);
         println!("Description: \"{}\"", ability.description);
     }
-    println!("==========");
+    println!("{}", format!("{:═^72}", "═"));
     } else {
         println!("\nCreature not found.\n");
     }
@@ -144,30 +158,33 @@ pub fn print_attributes(creature_stat: &str) {
     let creatures = parse_json(&contents).unwrap();
 
     if let Some(creature) = creatures.iter().find(|c| c.name.to_lowercase() == creature_stat.to_lowercase()) {
-        print!("\n| STR: {} | DEX: {} | CON: {} | INT: {} | WIS: {} | CHA: {} |\n", creature.str, creature.dex, creature.con, creature.int, creature.wis, creature.cha);
+        println!("{}", format!("║{:^11}│{:^11}│{:^11}│{:^11}│{:^11}│{:^10}║", format!("STR: {}", creature.str), format!("DEX: {}", creature.dex), format!("CON: {}", creature.con), format!("INT: {}", creature.int), format!("WIS: {}", creature.wis), format!("CHA: {}", creature.cha)));
     } 
 }
 
 ///
 /// Used in [encounter::attack] to display selected monster's attacks
 ///
-pub fn print_attacks(creature_stat: &str) {
+pub fn print_attacks(creature_stat: &str) -> usize {
     let contents = fs::read_to_string("/usr/local/share/dnd-encounter-tracker/statblocks.json").expect("Couldn't read statblock file");
     let creatures = parse_json(&contents).unwrap();
 
     if let Some(creature) = creatures.iter().find(|c| c.name.to_lowercase() == creature_stat.to_lowercase()) {
         let mut number = 1;
-        print!("==========");
+        println!("\n{}", format!("╔{:═^35}╗", "═"));
         for action in &creature.actions {
-            println!("\n{}. {}", number, action.name);
-            println!("Attack modifier: {}", action.attack_modifier);
-            println!("Damage: {}d{}+{} {} damage", action.damage_dice[0], action.damage_dice[1], action.damage_bonus, action.damage_type);
-            if number != creature.actions.len(){print!("----------");}
+            println!("{}", format!("║{:^35}║", format!("{}. {}", number, action.name)));
+            println!("{}", format!("║{:^35}║", format!("Attack modifier: {}", action.attack_modifier)));
+            println!("{}", format!("║{:^35}║", format!("Damage: {}d{}+{} {} damage", action.damage_dice[0], action.damage_dice[1], action.damage_bonus, action.damage_type)));
+            if number != creature.actions.len(){
+                println!("{}", format!("╟{:─<35}╢", "─"));
+            }
 
             number += 1;
         }
-        println!("==========\n")
-    }
+        println!("{}\n", format!("╚{:═^35}╝", "═"));
+        creature.actions.len()
+    } else {0}
 }
 
 ///
@@ -222,13 +239,19 @@ pub fn statblocks() {
     let name = user_input::input();
 
     if let Some(creature) = creatures.iter().find(|c| c.name.to_lowercase() == name.to_lowercase()) {
-        println!("\n==========");
-        println!("Stats for {}:", creature.name);
-        println!("Health: {}", creature.health);
-        println!("Armor Class: {}", creature.armor_class);
-        println!("Initiative: {}", creature.initiative);
-        println!("Movement Speed: {}", creature.movement_speed);
-        print!("| STR: {} | DEX: {} | CON: {} | INT: {} | WIS: {} | CHA: {} |", creature.str, creature.dex, creature.con, creature.int, creature.wis, creature.cha);
+        println!("\n{}", format!("╔{:═^70}╗", "═"));
+        println!("{}", format!("║{:^70}║", format!("Stats for {}:", creature.name)));
+        println!("{}", format!("╟{:─<70}╢", "─"));
+        println!("{}", format!("║{:^70}║", format!("Health: {}:", creature.health)));
+        println!("{}", format!("╟{:┄<70}╢", "┄"));
+        println!("{}", format!("║{:^70}║", format!("Armor class: {}:", creature.armor_class)));
+        println!("{}", format!("╟{:┄<70}╢", "┄"));
+        println!("{}", format!("║{:^70}║", format!("Initiative: {}:", creature.initiative)));
+        println!("{}", format!("╟{:┄<70}╢", "┄"));
+        println!("{}", format!("║{:^70}║", format!("Movement Speed: {}:", creature.movement_speed)));
+        println!("{}", format!("╟{:┄<70}╢", "┄"));
+        println!("{}", format!("║{:^11}│{:^11}│{:^11}│{:^11}│{:^11}│{:^10}║", format!("STR: {}", creature.str), format!("DEX: {}", creature.dex), format!("CON: {}", creature.con), format!("INT: {}", creature.int), format!("WIS: {}", creature.wis), format!("CHA: {}", creature.cha)));
+        println!("{}\n", format!("╚{:═<70}╝", "═"));
         combat_stats(&name);
         println!();
     } else {

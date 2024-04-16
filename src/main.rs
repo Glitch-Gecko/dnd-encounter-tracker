@@ -42,9 +42,14 @@ fn load_encounter() -> Vec<Creature> {
 ///
 /// Main menu that displays current encounter and selected character
 ///
-fn print_creatures(position: usize) {
+fn print_creatures(position: usize, round: usize) {
     let creatures = load_encounter();
-    println!("\nCreatures:");
+    print!("{esc}[2J{esc}[1;1H", esc = 27 as char);
+    println!("{}", format!("╔{:═<70}╗", "═"));
+    println!("{}", format!("║{:^70}║", format!("Current round: {round}").bold()));
+    println!("{}", format!("╟{:─<70}╢", "─"));
+    println!("{}", format!("║{:^70}║", format!("Creatures:").bold()));
+    println!("{}", format!("║{:70}║", " "));
     
     // Variable used for determining selected character
     let mut selector = 1;
@@ -54,21 +59,18 @@ fn print_creatures(position: usize) {
         // True if it's the character's 'turn', false otherwise
         if selector == position {
             if creature.character_type == "Player" {
-                let string = format!("{} - {}, AC: {}", creature.initiative, creature.name, creature.ac);
-                println!("{} {} {}", "-->".bright_yellow().bold(), string.bright_blue().bold(), "<--".bright_yellow().bold());
+                println!("{}", format!("║{:^109}║", format!("{} {} {}", "-->".bright_yellow(), format!("{} - {}, AC: {}", creature.initiative, creature.name, creature.ac).bright_blue(), "<--".bright_yellow()).bold()));
             } else {
-                let string = format!("{} - {}/{}, AC: {}, HP: {}", creature.initiative, creature.character_type, creature.name, creature.ac, creature.hp);
-                println!("{} {} {}", "-->".bright_yellow().bold(), string.bright_red().bold(), "<--".bright_yellow().bold());
+                println!("{}", format!("║{:^109}║", format!("{} {} {}", "-->".bright_yellow(), format!("{} - {}/{}, AC: {}, HP: {}", creature.initiative, creature.character_type, creature.name, creature.ac, creature.hp).bright_red(), "<--".bright_yellow()).bold()));
+
                 // Changes variable to whatever the selected creature type is, allowing actions to be displayed below 
                 creature_stat = creature.character_type.clone();
             }
         } else {
             if creature.character_type == "Player" {
-                let string = format!("{} - {}, AC: {}", creature.initiative, creature.name, creature.ac);
-                println!("{}", string.blue());
+                println!("{}", format!("║{:^70}║", format!("{} - {}, AC: {}", creature.initiative, creature.name, creature.ac).bright_blue()));
             } else {
-                let string = format!("{} - {}/{}, AC: {}, HP: {}", creature.initiative, creature.character_type, creature.name, creature.ac, creature.hp);
-                println!("{}", string.red());
+                println!("{}", format!("║{:^70}║", format!("{} - {}/{}, AC: {}, HP: {}", creature.initiative, creature.character_type, creature.name, creature.ac, creature.hp).bright_red()));
             }
         }
         selector += 1;
@@ -76,8 +78,12 @@ fn print_creatures(position: usize) {
 
     // Prints actions if the selected character is not a player
     if creature_stat != "Player" {
+        println!("{}", format!("╟{:─<70}╢", "─"));
         stat_search::print_attributes(&creature_stat);
+        println!("{}", format!("╚{:═<70}╝", "═"));
         stat_search::combat_stats(&creature_stat);
+    } else {
+        println!("{}", format!("╚{:═<70}╝", "═"));
     }
     println!();
 }
@@ -97,9 +103,7 @@ fn initial_startup_loop(round: usize, position: usize) {
     if creatures.len() == 0 {
         initial_startup_loop(round, position);
     }
-    print!("{esc}[2J{esc}[1;1H", esc = 27 as char);
-    println!("Current Round: {round}");
-    print_creatures(position);
+    print_creatures(position, round);
 }
 
 ///
@@ -113,15 +117,12 @@ fn main() {
     println!("Welcome to the D&D Combat Tracker!\n");
 
     loop {
-        print!("{esc}[2J{esc}[1;1H", esc = 27 as char);
-
         // Checks if encounter file exists, calls initialization function if it doesn't
         let expanded_path = shellexpand::tilde("~/.config/dnd-encounter-tracker/encounter.json").into_owned();
         let path = PathBuf::from(expanded_path);
         let path = Path::new(&path);
         if path.exists() {
-            println!("Current Round: {round}");
-            print_creatures(position);
+            print_creatures(position, round);
         } else {
             initial_startup_loop(round, position);
         }
@@ -138,10 +139,10 @@ fn main() {
             // Goes to next round if all characters have taken a turn
             if position == creatures.len()+1 {round+=1; position=0; break;}
 
-            println!("Enter a command! Type h for help: ");
+            println!("Enter a command! Type h for help menu: ");
             let input: String = user_input::input();
             println!();
-            if input == "quit" {
+            if input == "quit" || input == "done" {
                 println!("I hope you enjoyed using this program!");
                 exit(0);
             }
@@ -166,40 +167,38 @@ fn main() {
                 "s" => {stat_search::statblocks();},
                 "a" => {
                     encounter::add_character();
-                    print!("{esc}[2J{esc}[1;1H", esc = 27 as char);
-                    println!("Current Round: {}", round);
-                    print_creatures(position);
+                    print_creatures(position, round);
                 },
                 "e" => {
                     encounter::edit_creature();
-                    print!("{esc}[2J{esc}[1;1H", esc = 27 as char);
-                    println!("Current Round: {}", round);
-                    print_creatures(position);
+                    print_creatures(position, round);
                 },
                 "r" => {
                     encounter::remove_creature();
-                    print!("{esc}[2J{esc}[1;1H", esc = 27 as char);
-                    println!("Current Round: {}", round);
-                    print_creatures(position);
+                    print_creatures(position, round);
                 },
                 "c" => {
-                    print!("{esc}[2J{esc}[1;1H", esc = 27 as char);
-                    println!("Current Round: {}", round);
-                    print_creatures(position);
+                    print_creatures(position, round);
                 },
                 "d" => {
                     encounter::damage_creature();
-                    print!("{esc}[2J{esc}[1;1H", esc = 27 as char);
-                    println!("Current Round: {}", round);
-                    print_creatures(position);
+                    print_creatures(position, round);
                 },
                 "t" => {
                     encounter::attack();
-                    print!("{esc}[2J{esc}[1;1H", esc = 27 as char);
-                    println!("Current Round: {}", round);
-                    print_creatures(position);
+                    print_creatures(position, round);
                 },
-                "h" => {println!("Commands:\n(n)ext character\n(p)revious character\n(s)tat search\n(a)dd creature\n(e)dit stats\n(d)amage creature\na(t)tack action\n(c)lear screen\n(r)emove character\n");},
+                "h" => {println!("Commands:
+a: add creature
+c: clear screen
+d: damage creature
+e: edit stats
+n: next character
+p: previous character
+r: remove character
+s: stat search
+t: attack action
+");},
                 _ => {
                     println!("Invalid command!");
                 }
