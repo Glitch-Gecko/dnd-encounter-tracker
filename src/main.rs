@@ -7,6 +7,7 @@ use std::process::exit;
 use std::path::Path;
 use serde::{Deserialize, Serialize};
 use colored::*;
+use std::path::PathBuf;
 
 ///
 /// Creature struct used for the main menu
@@ -32,7 +33,9 @@ fn parse_json(json_data: &str) -> Result<Vec<Creature>, serde_json::Error> {
 /// Loads encounter file using [parse_json]
 ///
 fn load_encounter() -> Vec<Creature> {
-   let contents = fs::read_to_string("~/.config/dnd-encounter-tracker/encounter.json").expect("Couldn't read encounter file");
+    let expanded_path = shellexpand::tilde("~/.config/dnd-encounter-tracker/encounter.json").into_owned();
+    let path = PathBuf::from(expanded_path);
+    let contents = fs::read_to_string(&path).expect("Couldn't read encounter file");
     parse_json(&contents).unwrap()
 }
 
@@ -113,7 +116,9 @@ fn main() {
         print!("{esc}[2J{esc}[1;1H", esc = 27 as char);
 
         // Checks if encounter file exists, calls initialization function if it doesn't
-        let path = Path::new("~/.config/dnd-encounter-tracker/encounter.json");
+        let expanded_path = shellexpand::tilde("~/.config/dnd-encounter-tracker/encounter.json").into_owned();
+        let path = PathBuf::from(expanded_path);
+        let path = Path::new(&path);
         if path.exists() {
             println!("Current Round: {round}");
             print_creatures(position);

@@ -5,6 +5,8 @@ use crate::stat_search;
 use titlecase::titlecase;
 use colored::*;
 use rand::Rng;
+use std::path::PathBuf;
+extern crate shellexpand;
 
 ///
 /// Character struct used for printing basic stats on the main menu
@@ -23,7 +25,9 @@ pub struct Character {
 ///
 pub fn attack() {
     // Loads encounter file if it exists
-    let content = fs::read_to_string("~/.config/dnd-encounter-tracker/encounter.json").unwrap_or_else(|_| "[]".to_string());
+    let expanded_path = shellexpand::tilde("~/.config/dnd-encounter-tracker/encounter.json").into_owned();
+    let path = PathBuf::from(expanded_path);
+    let content = fs::read_to_string(&path).unwrap_or_else(|_| "[]".to_string());
     let characters: Vec<Character> = serde_json::from_str(&content).unwrap_or_else(|_| {
         println!("Error parsing JSON. Starting with an empty list.");
         Vec::new()
@@ -85,16 +89,25 @@ pub fn attack() {
 
         // Rolls for attack and damage, comparing it to target's AC
         let attack_roll = rand::thread_rng().gen_range(1..21) + attack_var.attack_modifier;
-        if attack_roll >= characters[attacked-1].ac {
-            attack_string_1 = format!("Rolled a {} against {}/{}'s AC of {}, and hit", attack_roll, characters[attacked-1].character_type, characters[attacked-1].name, characters[attacked-1].ac);
+        if attack_roll - attack_var.attack_modifier == 20 {
+            attack_string_1 = format!("Rolled a nat 20 and dealt a critical hit!");
             let mut damage_roll = rand::thread_rng().gen_range(1..attack_var.damage_dice[1]+1);
-            for _ in 0..attack_var.damage_dice[0]-1 {
+            for _ in 0..attack_var.damage_dice[0] {
                 damage_roll += rand::thread_rng().gen_range(1..attack_var.damage_dice[1]+1);
             }
             attack_string_2 = format!("This dealt {}+{} = {} {} damage", damage_roll, attack_var.damage_bonus, damage_roll+attack_var.damage_bonus, attack_var.damage_type);
         } else {
-            attack_string_1 = format!("Rolled a {} against {}/{}'s AC of {}, and missed", attack_roll, characters[attacked-1].character_type, characters[attacked-1].name, characters[attacked-1].ac);
-            attack_string_2 = "Null".to_string();
+            if attack_roll >= characters[attacked-1].ac {
+                attack_string_1 = format!("Rolled a {}+{} = {} against {}/{}'s AC of {}, and hit", attack_roll-attack_var.attack_modifier, attack_var.attack_modifier, attack_roll, characters[attacked-1].character_type, characters[attacked-1].name, characters[attacked-1].ac);
+                let mut damage_roll = rand::thread_rng().gen_range(1..attack_var.damage_dice[1]+1);
+                for _ in 0..attack_var.damage_dice[0]-1 {
+                    damage_roll += rand::thread_rng().gen_range(1..attack_var.damage_dice[1]+1);
+                }
+                attack_string_2 = format!("This dealt {}+{} = {} {} damage", damage_roll, attack_var.damage_bonus, damage_roll+attack_var.damage_bonus, attack_var.damage_type);
+            } else {
+                attack_string_1 = format!("Rolled a {}+{} = {} against {}/{}'s AC of {}, and missed", attack_roll-attack_var.attack_modifier, attack_var.attack_modifier, attack_roll, characters[attacked-1].character_type, characters[attacked-1].name, characters[attacked-1].ac);
+                attack_string_2 = "Null".to_string();
+            }
         }
     }
 }
@@ -104,7 +117,9 @@ pub fn attack() {
 ///
 pub fn edit_creature() {
     // Loads encounter file
-    let content = fs::read_to_string("~/.config/dnd-encounter-tracker/encounter.json").unwrap_or_else(|_| "[]".to_string());
+    let expanded_path = shellexpand::tilde("~/.config/dnd-encounter-tracker/encounter.json").into_owned();
+    let path = PathBuf::from(expanded_path);
+    let content = fs::read_to_string(&path).unwrap_or_else(|_| "[]".to_string());
     let mut characters: Vec<Character> = serde_json::from_str(&content).unwrap_or_else(|_| {
         println!("Error parsing JSON. Starting with an empty list.");
         Vec::new()
@@ -160,7 +175,9 @@ pub fn edit_creature() {
         
         // Saves new file contents
         let json_characters = serde_json::to_string_pretty(&characters).unwrap();
-        std::fs::write("~/.config/dnd-encounter-tracker/encounter.json", json_characters).expect("Unable to write to file");
+        let expanded_path = shellexpand::tilde("~/.config/dnd-encounter-tracker/encounter.json").into_owned();
+        let path = PathBuf::from(expanded_path);
+        std::fs::write(&path, json_characters).expect("Unable to write to file");
     }
 
 }
@@ -195,7 +212,9 @@ fn print_creatures(characters: &Vec<Character>) {
 ///
 pub fn remove_creature() {
     // Loads encounter file
-    let content = fs::read_to_string("~/.config/dnd-encounter-tracker/encounter.json").unwrap_or_else(|_| "[]".to_string());
+    let expanded_path = shellexpand::tilde("~/.config/dnd-encounter-tracker/encounter.json").into_owned();
+    let path = PathBuf::from(expanded_path);
+    let content = fs::read_to_string(&path).unwrap_or_else(|_| "[]".to_string());
     let mut characters: Vec<Character> = serde_json::from_str(&content).unwrap_or_else(|_| {
         println!("Error parsing JSON. Starting with an empty list.");
         Vec::new()
@@ -218,7 +237,9 @@ pub fn remove_creature() {
 
         // Saves changes to encounter file
         let json_characters = serde_json::to_string_pretty(&characters).unwrap();
-        std::fs::write("~/.config/dnd-encounter-tracker/encounter.json", json_characters).expect("Unable to write to file");
+        let expanded_path = shellexpand::tilde("~/.config/dnd-encounter-tracker/encounter.json").into_owned();
+        let path = PathBuf::from(expanded_path);
+        std::fs::write(&path, json_characters).expect("Unable to write to file");
     }
 }
 
@@ -227,7 +248,9 @@ pub fn remove_creature() {
 ///
 pub fn damage_creature() {
     // Loads encounter file
-    let content = fs::read_to_string("~/.config/dnd-encounter-tracker/encounter.json").unwrap_or_else(|_| "[]".to_string());
+    let expanded_path = shellexpand::tilde("~/.config/dnd-encounter-tracker/encounter.json").into_owned();
+    let path = PathBuf::from(expanded_path);
+    let content = fs::read_to_string(&path).unwrap_or_else(|_| "[]".to_string());
     let mut characters: Vec<Character> = serde_json::from_str(&content).unwrap_or_else(|_| {
         println!("Error parsing JSON. Starting with an empty list.");
         Vec::new()
@@ -252,7 +275,9 @@ pub fn damage_creature() {
 
         // Saves changes in encounter file
         let json_characters = serde_json::to_string_pretty(&characters).unwrap();
-        std::fs::write("~/.config/dnd-encounter-tracker/encounter.json", json_characters).expect("Unable to write to file");
+        let expanded_path = shellexpand::tilde("~/.config/dnd-encounter-tracker/encounter.json").into_owned();
+        let path = PathBuf::from(expanded_path);
+        std::fs::write(&path, json_characters).expect("Unable to write to file");
     }
 }
 
@@ -301,7 +326,9 @@ fn add_player() -> Character {
 ///
 pub fn add_character() {
     // Loads encounter file
-    let content = fs::read_to_string("~/.config/dnd-encounter-tracker/encounter.json").unwrap_or_else(|_| "[]".to_string());
+    let expanded_path = shellexpand::tilde("~/.config/dnd-encounter-tracker/encounter.json").into_owned();
+    let path = PathBuf::from(expanded_path);
+    let content = fs::read_to_string(&path).unwrap_or_else(|_| "[]".to_string());
     let mut characters: Vec<Character> = serde_json::from_str(&content).unwrap_or_else(|_| {
         println!("Error parsing JSON. Starting with an empty list.");
         Vec::new()
@@ -330,7 +357,12 @@ pub fn add_character() {
     // Sorts characters by initiative (doesn't take dex into account)
     characters.sort_by_key(|char| -char.initiative);
 
-    // Saves changes to encounter file
+    // Saves changes to encounter file, and creates the folder structure
     let json_characters = serde_json::to_string_pretty(&characters).unwrap();
-    std::fs::write("~/.config/dnd-encounter-tracker/encounter.json", json_characters).expect("Unable to write to file");
+    let expanded_path = shellexpand::tilde("~/.config/dnd-encounter-tracker").into_owned();
+    let path = PathBuf::from(expanded_path);
+    std::fs::create_dir_all(&path).expect("Failed to create directory");
+    let expanded_path = shellexpand::tilde("~/.config/dnd-encounter-tracker/encounter.json").into_owned();
+    let path = PathBuf::from(expanded_path);
+    std::fs::write(&path, json_characters).expect("Unable to write to file");
 }
