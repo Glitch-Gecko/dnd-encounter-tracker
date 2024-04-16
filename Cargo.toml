@@ -15,3 +15,6 @@ serde_json = "1.0"
 rand = "0.8"
 titlecase = "1.0"
 colored = "2"
+
+[package.metadata.aur]
+files = [["./files/statblocks.json", "/usr/local/share/dnd-encounter-tracker/statblocks.json"]]
