@@ -1,0 +1,234 @@
+[
+    {
+        "name": "Orc",
+        "health": 15,
+        "armor_class": 13,
+        "initiative": 1,
+        "movement_speed": 30,
+        "str": 16,
+        "dex": 12,
+        "con": 16,
+        "int": 7,
+        "wis": 11,
+        "cha": 10,
+        "actions": [
+            {
+                "name": "Greataxe",
+                "description": "Melee Weapon Attack: +5 to hit, reach 5 ft., one target.",
+                "attack_modifier": 5,
+                "damage_dice": [1, 12],
+                "damage_bonus": 3,
+                "damage_type": "slashing"
+            },
+            {
+                "name": "Javelin",
+                "description": "Melee or Ranged Weapon Attack: +5 to hit, reach 5 ft. or range 30/120 ft., one target.",
+                "attack_modifier": 5,
+                "damage_dice": [1, 6],
+                "damage_bonus": 3,
+                "damage_type": "piercing"
+            }
+        ],
+        "abilities": [
+            {
+                "name": "Aggressive",
+                "description": "As a bonus action, the orc can move up to its speed toward a hostile creature that it can see."
+            }
+        ]
+    },
+    {
+        "name": "Ogre",
+        "health": 59,
+        "armor_class": 11,
+        "initiative": -1,
+        "movement_speed": 40,
+        "str": 19,
+        "dex": 8,
+        "con": 16,
+        "int": 5,
+        "wis": 7,
+        "cha": 7,
+        "actions": [
+            {
+                "name": "Greatclub",
+                "description": "Melee Weapon Attack: +6 to hit, reach 5 ft., one target.",
+                "attack_modifier": 6,
+                "damage_dice": [2, 8],
+                "damage_bonus": 4,
+                "damage_type": "bludgeoning"
+            },
+            {
+                "name": "Javelin",
+                "description": "Melee or Ranged Weapon Attack: +6 to hit, reach 5 ft. or range 30/120 ft., one target.",
+                "attack_modifier": 6,
+                "damage_dice": [2, 6],
+                "damage_bonus": 4,
+                "damage_type": "piercing"
+            }
+        ],
+        "abilities": []
+    },
+    {
+        "name": "Orog",
+        "health": 42,
+        "armor_class": 18,
+        "initiative": 1,
+        "movement_speed": 30,
+        "str": 18,
+        "dex": 12,
+        "con": 18,
+        "int": 12,
+        "wis": 11,
+        "cha": 12,
+        "actions": [
+            {
+                "name": "Greataxe",
+                "description": "Melee Weapon Attack: +6 to hit, reach 5 ft., one target.",
+                "attack_modifier": 6,
+                "damage_dice": [1, 12],
+                "damage_bonus": 4,
+                "damage_type": "slashing"
+            },
+            {
+                "name": "Javelin",
+                "description": "Melee or Ranged Weapon Attack: +6 to hit, reach 5 ft. or range 30/120 ft., one target.",
+                "attack_modifier": 6,
+                "damage_dice": [1, 6],
+                "damage_bonus": 4,
+                "damage_type": "piercing"
+            }
+        ],
+        "abilities": [
+            {
+                "name": "Aggressive",
+                "description": "As a bonus action, the orog can move up to its speed toward a hostile creature that it can see."
+            },
+            {
+                "name": "Multiattack",
+                "description": "The orog makes two greataxe attacks."
+            }
+        ]
+    },
+    {
+        "name": "Troglodyte",
+        "health": 13,
+        "armor_class": 11,
+        "initiative": 0,
+        "movement_speed": 30,
+        "str": 14,
+        "dex": 10,
+        "con": 14,
+        "int": 6,
+        "wis": 10,
+        "cha": 6,
+        "actions": [
+            {
+                "name": "Claw",
+                "description": "Melee Weapon Attack: +4 to hit, reach 5 ft., one target.",
+                "attack_modifier": 4,
+                "damage_dice": [1, 4],
+                "damage_bonus": 2,
+                "damage_type": "piercing"
+            },
+            {
+                "name": "Bite",
+                "description": "Melee Weapon Attack: +4 to hit, reach 5 ft., one target.",
+                "attack_modifier": 4,
+                "damage_dice": [1, 4],
+                "damage_bonus": 2,
+                "damage_type": "slashing"
+            }
+        ],
+        "abilities": [
+            {
+                "name": "Chameleon Skin",
+                "description": "The troglodyte has advantage on Dexterity (Stealth) checks made to hide."
+            },
+            {
+                "name": "Stench",
+                "description": "Any creature other than a troglodyte that starts its turn within 5 feet of the troglodyte must succeed on a DC 12 Constitution saving throw or be poisoned until the start of its next turn."
+            },
+            {
+                "name": "Sunlight Sensitivity",
+                "description": "While in sunlight, the troglodyte has disadvantage on attack rolls, as well as Wisdom (Perception) checks that rely on sight."
+            },
+            {
+                "name": "Multiattack",
+                "description": "The troglodyte makes three attacks: one with its bite and two with its claws."
+            }
+        ]
+    },
+    {
+        "name": "Stirge",
+        "health": 2,
+        "armor_class": 14,
+        "initiative": 3,
+        "movement_speed": 10,
+        "str": 4,
+        "dex": 16,
+        "con": 11,
+        "int": 2,
+        "wis": 8,
+        "cha": 6,
+        "actions": [
+            {
+                "name": "Blood Drain",
+                "description": "Melee Weapon Attack: +5 to hit, reach 5 ft., one creature. The stirge attaches to the creature and doesn't attack, instead draining (1d4+3) HP each turn. After draining 10 HP or the target dies, it detatches by spending 5 ft of movement. A creature can detatch it manually after using an action.",
+                "attack_modifier": 5,
+                "damage_dice": [1, 4],
+                "damage_bonus": 3,
+                "damage_type": "piercing"
+            }
+        ],
+        "abilities": []
+    },
+    {
+        "name": "Orc Eye of Gruumsh",
+        "health": 45,
+        "armor_class": 16,
+        "initiative": 1,
+        "movement_speed": 30,
+        "str": 16,
+        "dex": 12,
+        "con": 16,
+        "int": 9,
+        "wis": 13,
+        "cha": 12,
+        "actions": [
+            {
+                "name": "Spear",
+                "description": "Melee or Ranged Weapon Attack: +5 to hit, reach 5 ft. or range 20/60 ft., one target.",
+                "attack_modifier": 5,
+                "damage_dice": [1, 8],
+                "damage_bonus": 3,
+                "damage_type": "piercing"
+            }
+        ],
+        "abilities": [
+            {
+                "name": "Aggressive",
+                "description": "As a bonus action, the orc can move up to its speed toward a hostile creature that it can see."
+            },
+            {
+                "name": "Gruumsh's Fury",
+                "description": "The orc deals an extra 4(1d8) damage when it hits with a weapon attack."
+            },
+            {
+                "name": "Spellcasting",
+                "description": "The orc is a 3rd level spellcaster. Its spellcasting ability is Wisdom (spell save DC 11, +3 to hit with spell attacks). The orc has the following cleric spells prepared:"
+            },
+            {
+                "name": "Cantrips (at-will)",
+                "description": "Guidance, resistance, thaumaturgy"
+            },
+            {
+                "name": "1st level (4 slots)",
+                "description": "Bless, command"
+            },
+            {
+                "name": "2nd level (2 slots)",
+                "description": "Augury, spiritual weapon (spear)"
+            }
+        ]
+    }
+]
