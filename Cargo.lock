@@ -28,7 +28,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "dnd_encounter_tracker"
+name = "dnd-encounter-tracker"
 version = "0.1.0"
 dependencies = [
  "colored",
