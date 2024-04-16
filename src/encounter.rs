@@ -23,7 +23,7 @@ pub struct Character {
 ///
 pub fn attack() {
     // Loads encounter file if it exists
-    let content = fs::read_to_string("/usr/local/share/dnd-encounter-tracker/encounter.json").unwrap_or_else(|_| "[]".to_string());
+    let content = fs::read_to_string("~/.config/dnd-encounter-tracker/encounter.json").unwrap_or_else(|_| "[]".to_string());
     let characters: Vec<Character> = serde_json::from_str(&content).unwrap_or_else(|_| {
         println!("Error parsing JSON. Starting with an empty list.");
         Vec::new()
@@ -104,7 +104,7 @@ pub fn attack() {
 ///
 pub fn edit_creature() {
     // Loads encounter file
-    let content = fs::read_to_string("/usr/local/share/dnd-encounter-tracker/encounter.json").unwrap_or_else(|_| "[]".to_string());
+    let content = fs::read_to_string("~/.config/dnd-encounter-tracker/encounter.json").unwrap_or_else(|_| "[]".to_string());
     let mut characters: Vec<Character> = serde_json::from_str(&content).unwrap_or_else(|_| {
         println!("Error parsing JSON. Starting with an empty list.");
         Vec::new()
@@ -160,7 +160,7 @@ pub fn edit_creature() {
         
         // Saves new file contents
         let json_characters = serde_json::to_string_pretty(&characters).unwrap();
-        std::fs::write("/usr/local/share/dnd-encounter-tracker/encounter.json", json_characters).expect("Unable to write to file");
+        std::fs::write("~/.config/dnd-encounter-tracker/encounter.json", json_characters).expect("Unable to write to file");
     }
 
 }
@@ -195,7 +195,7 @@ fn print_creatures(characters: &Vec<Character>) {
 ///
 pub fn remove_creature() {
     // Loads encounter file
-    let content = fs::read_to_string("/usr/local/share/dnd-encounter-tracker/encounter.json").unwrap_or_else(|_| "[]".to_string());
+    let content = fs::read_to_string("~/.config/dnd-encounter-tracker/encounter.json").unwrap_or_else(|_| "[]".to_string());
     let mut characters: Vec<Character> = serde_json::from_str(&content).unwrap_or_else(|_| {
         println!("Error parsing JSON. Starting with an empty list.");
         Vec::new()
@@ -218,7 +218,7 @@ pub fn remove_creature() {
 
         // Saves changes to encounter file
         let json_characters = serde_json::to_string_pretty(&characters).unwrap();
-        std::fs::write("/usr/local/share/dnd-encounter-tracker/encounter.json", json_characters).expect("Unable to write to file");
+        std::fs::write("~/.config/dnd-encounter-tracker/encounter.json", json_characters).expect("Unable to write to file");
     }
 }
 
@@ -227,7 +227,7 @@ pub fn remove_creature() {
 ///
 pub fn damage_creature() {
     // Loads encounter file
-    let content = fs::read_to_string("/usr/local/share/dnd-encounter-tracker/encounter.json").unwrap_or_else(|_| "[]".to_string());
+    let content = fs::read_to_string("~/.config/dnd-encounter-tracker/encounter.json").unwrap_or_else(|_| "[]".to_string());
     let mut characters: Vec<Character> = serde_json::from_str(&content).unwrap_or_else(|_| {
         println!("Error parsing JSON. Starting with an empty list.");
         Vec::new()
@@ -252,7 +252,7 @@ pub fn damage_creature() {
 
         // Saves changes in encounter file
         let json_characters = serde_json::to_string_pretty(&characters).unwrap();
-        std::fs::write("/usr/local/share/dnd-encounter-tracker/encounter.json", json_characters).expect("Unable to write to file");
+        std::fs::write("~/.config/dnd-encounter-tracker/encounter.json", json_characters).expect("Unable to write to file");
     }
 }
 
@@ -301,7 +301,7 @@ fn add_player() -> Character {
 ///
 pub fn add_character() {
     // Loads encounter file
-    let content = fs::read_to_string("/usr/local/share/dnd-encounter-tracker/encounter.json").unwrap_or_else(|_| "[]".to_string());
+    let content = fs::read_to_string("~/.config/dnd-encounter-tracker/encounter.json").unwrap_or_else(|_| "[]".to_string());
     let mut characters: Vec<Character> = serde_json::from_str(&content).unwrap_or_else(|_| {
         println!("Error parsing JSON. Starting with an empty list.");
         Vec::new()
@@ -332,5 +332,5 @@ pub fn add_character() {
 
     // Saves changes to encounter file
     let json_characters = serde_json::to_string_pretty(&characters).unwrap();
-    std::fs::write("/usr/local/share/dnd-encounter-tracker/encounter.json", json_characters).expect("Unable to write to file");
+    std::fs::write("~/.config/dnd-encounter-tracker/encounter.json", json_characters).expect("Unable to write to file");
 }
