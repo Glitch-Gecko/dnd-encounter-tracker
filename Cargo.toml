@@ -17,4 +17,4 @@ titlecase = "1.0"
 colored = "2"
 
 [package.metadata.aur]
-files = [["./files/statblocks.json", "/usr/local/share/dnd-encounter-tracker/statblocks.json"]]
+files = [["/home/nicolas/Documents/projects/rust/dnd-encounter-tracker/files/statblocks.json", "/usr/local/share/dnd-encounter-tracker/statblocks.json"]]
